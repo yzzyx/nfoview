@@ -72,11 +72,19 @@ class TextView(Gtk.TextView):
         text_buffer.insert_with_tags(itr, url, tag)
         self._link_tags.append(tag)
 
-    def _insert_word(self, word):
+    def _insert_word(self, word, tags = None):
         """Insert `word` into the text view."""
         text_buffer = self.get_buffer()
         itr = text_buffer.get_end_iter()
-        text_buffer.insert(itr, word)
+        text_buffer.insert_with_tags(itr, word, *tags)
+
+        """
+        tag_str = ""
+        for tag in tags:
+            tag_str += tag.props.name
+            text_buffer.apply_tag(tag, itr, text_buffer.get_end_iter())
+        print("Adding text %s with tags: %s" % (word, tag_str))
+        """
 
     def _on_link_tag_event(self, tag, text_view, event, itr):
         """Open clicked hyperlink in web browser."""
@@ -107,13 +115,132 @@ class TextView(Gtk.TextView):
         self._visited_link_tags = []
         text_buffer = self.get_buffer()
         bounds = text_buffer.get_bounds()
+        text_buffer.remove_all_tags(*bounds)
         text_buffer.delete(*bounds)
+
+        # Create colors
+        fg_color_tags_normal =  {
+                "30": text_buffer.create_tag("color_30", foreground_rgba=Gdk.RGBA(0.0,0,0,1.0)),
+                "31": text_buffer.create_tag("color_31", foreground_rgba=Gdk.RGBA(0.66,0,0,1.0)),
+                "32": text_buffer.create_tag("color_32", foreground_rgba=Gdk.RGBA(0,0.66,0,1.0)),
+                "33": text_buffer.create_tag("color_33", foreground_rgba=Gdk.RGBA(0.66,0.33,1.0)),
+                "34": text_buffer.create_tag("color_34", foreground_rgba=Gdk.RGBA(0,0,0.66,1.0)),
+                "35": text_buffer.create_tag("color_35", foreground_rgba=Gdk.RGBA(0.66,0,0.66,1.0)),
+                "36": text_buffer.create_tag("color_36", foreground_rgba=Gdk.RGBA(0,0.66,0.66,1.0)),
+                "37": text_buffer.create_tag("color_37", foreground_rgba=Gdk.RGBA(0.66,0.66,0.66,1.0)),
+                }
+        fg_color_tags_high =  {
+                "30": text_buffer.create_tag("color_30_hi", foreground_gdk=Gdk.color_parse("#555555FF")),
+                "31": text_buffer.create_tag("color_31_hi", foreground_gdk=Gdk.color_parse("#FF5555FF")),
+                "32": text_buffer.create_tag("color_32_hi", foreground_gdk=Gdk.color_parse("#55FF55FF")),
+                "33": text_buffer.create_tag("color_33_hi", foreground_gdk=Gdk.color_parse("#FFFF55FF")),
+                "34": text_buffer.create_tag("color_34_hi", foreground_gdk=Gdk.color_parse("#5555FFFF")),
+                "35": text_buffer.create_tag("color_35_hi", foreground_gdk=Gdk.color_parse("#FF55FFFF")),
+                "36": text_buffer.create_tag("color_36_hi", foreground_gdk=Gdk.color_parse("#55FFFFFF")),
+                "37": text_buffer.create_tag("color_37_hi", foreground_gdk=Gdk.color_parse("#FFFFFFFF")),
+                }
+
+        bg_color_tags_normal =  {
+                "40": text_buffer.create_tag("color_40", background="black"),
+                #"40": text_buffer.create_tag("color_40", background_gdk=Gdk.color_parse("#000000FF")),
+                "41": text_buffer.create_tag("color_41", background_gdk=Gdk.color_parse("#AA0000FF")),
+                "42": text_buffer.create_tag("color_42", background_gdk=Gdk.color_parse("#00AA00FF")),
+                "43": text_buffer.create_tag("color_43", background_gdk=Gdk.color_parse("#AA5500FF")),
+                "44": text_buffer.create_tag("color_44", background_gdk=Gdk.color_parse("#0000AAFF")),
+                "45": text_buffer.create_tag("color_45", background_gdk=Gdk.color_parse("#AA00AAFF")),
+                "46": text_buffer.create_tag("color_46", background_gdk=Gdk.color_parse("#00AAAAFF")),
+                "47": text_buffer.create_tag("color_47", background_gdk=Gdk.color_parse("#AAAAAAFF")),
+                }
+        bg_color_tags_high =  {
+                "40": text_buffer.create_tag("color_40_hi", background_gdk=Gdk.color_parse("#555555FF")),
+                "41": text_buffer.create_tag("color_41_hi", background_gdk=Gdk.color_parse("#FF5555FF")),
+                "42": text_buffer.create_tag("color_42_hi", background_gdk=Gdk.color_parse("#55FF55FF")),
+                "43": text_buffer.create_tag("color_43_hi", background_gdk=Gdk.color_parse("#FFFF55FF")),
+                "44": text_buffer.create_tag("color_44_hi", background_gdk=Gdk.color_parse("#5555FFFF")),
+                "45": text_buffer.create_tag("color_45_hi", background_gdk=Gdk.color_parse("#FF55FFFF")),
+                "46": text_buffer.create_tag("color_46_hi", background_gdk=Gdk.color_parse("#55FFFFFF")),
+                "47": text_buffer.create_tag("color_47_hi", background_gdk=Gdk.color_parse("#FFFFFFFF")),
+                }
+
+        bold_tag = text_buffer.create_tag("bold", weight=Pango.Weight.BOLD)
+        underline_tag = text_buffer.create_tag("underline", underline=Pango.Underline.SINGLE)
+        # Blink, slow <150/m
+        # Blink, rapid >150/m
+        # Inverse video
+        # 22 - Normal color
+        # 25 - Blink off
+
+        active_fg_color = fg_color_tags_normal["37"]
+        active_bg_color = bg_color_tags_normal["40"]
+        active_tags = [active_fg_color, active_bg_color]
+        use_high = False
+        use_inverse = False
+
+        re_ansi = re.compile(r"\033\[(.*?)([Cm])")
         lines = text.split("\n")
         # Scan text word-by-word for possible URLs,
         # but insert words in larger chunks to avoid
         # doing too many slow text view updates.
         word_queue = []
         for i, line in enumerate(lines):
+            matches = re_ansi.finditer(line)
+            last_match = 0
+            for m in matches:
+                # Add text before ANSI escape code
+                self._insert_word(line[last_match:m.start(0)], active_tags)
+                last_match = m.end(0)
+
+                # Handle escape code
+                code = m.group(2)
+                modifier = m.group(1)
+
+                if code == "m":
+                    modifiers = modifier.split(";")
+                    for modifier in modifiers:
+                        modifier = int(modifier)
+                        # SGR parameters
+                        if modifier == 0:
+                            active_fg_color = fg_color_tags_normal["37"]
+                            active_bg_color = bg_color_tags_normal["40"]
+                            use_high = False
+                            use_inverse = False
+
+                        elif modifier == 1:
+                            use_high = True
+
+                        elif modifier == 7: # Inverse, swap fg and bg
+                            use_inverse = True
+
+                        elif modifier == 21: # Bold: off or Underline: double
+                            use_high = False
+
+                        elif modifier == 22: # Normal color or intesity
+                            use_high = False
+
+                        elif modifier == 27: # Normal color or intesity
+                            use_inverse = False
+
+                        elif modifier >= 30 and modifier <= 37: # fg colors
+                            if use_high:
+                                active_fg_color = fg_color_tags_high[str(modifier)]
+                            else:
+                                active_fg_color = fg_color_tags_normal[str(modifier)]
+
+                        elif modifier >= 40 and modifier <= 47: # fg colors
+                            active_bg_color = bg_color_tags_normal[str(modifier)]
+
+                    active_tags = [ active_fg_color, active_bg_color, ]
+
+                elif code == "C": # Move cursor n steps to the right
+                    self._insert_word(" " * int(modifier), active_tags)
+
+
+
+            # Add text after last escape-code
+            self._insert_word(line[last_match:] + "\n", active_tags)
+     #   self.update_colors()
+        """
+
             words = line.split(" ")
             for j, word in enumerate(words):
                 match = re_url.search(word)
@@ -133,9 +260,10 @@ class TextView(Gtk.TextView):
                 self._insert_word("".join(word_queue))
                 word_queue = []
         self._insert_word("".join(word_queue))
-        self.update_colors()
+        """
 
     def update_colors(self):
+        return
         """Update colors to match the current color scheme."""
         name = nfoview.conf.color_scheme
         scheme = nfoview.util.get_color_scheme(name, "default")
