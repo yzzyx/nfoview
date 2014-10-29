@@ -18,6 +18,7 @@ class NfoFile:
         with open(path, "rb") as f:
             self.data = f.read()
             self.sauce.read_from_file(f)
+            self.data = self.data.decode(self.encoding)
             if self.sauce.is_valid:
                 if self.sauce.datatype == 1 and self.sauce.filetype == 1:
                     self.filetype = TYPE_ANSI
@@ -31,7 +32,6 @@ class NfoFile:
                     self.filetype = TYPE_ANSI
                 else:
                     self.filetype = TYPE_ASCII
-            self.data = self.data.decode(self.encoding)
 
         # For viewing purposes, we don't care about anything after EOF (e.g. SAUCE)
         eof_marker = self.data.find("\032")
