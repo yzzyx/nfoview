@@ -76,10 +76,10 @@ class SAUCE:
                 if self.comments_count > 0 and self.comments_count < 256 and \
                     (self.comments_count*64 + 5 + 128) < file_sz:
                     # Go to comments
-                    file_handle.seek(-128 - comments_count*64 - 5, 2)
-                    data = f.read(5)
+                    file_handle.seek(-128 - self.comments_count*64 - 5, 2)
+                    data = file_handle.read(5)
                     if data == b"COMNT":
-                        for c in xrange(0,self.comments_count):
+                        for c in range(0,self.comments_count):
                             comment = file_handle.read(64).decode("cp437")
                             self.comments.append(comment)
 
