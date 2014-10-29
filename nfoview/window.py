@@ -267,20 +267,19 @@ class Window(Gtk.Window):
     def _read_file(self, path):
         """
         Read and return the text of the NFO file at `path`.
-
-        Discard trailing space, trailing blank lines and all odd or
-        even line if they do not contain non-space characters.
         """
         encoding = nfoview.util.detect_encoding(path)
+
+        text = ""
         with open(path, "r", encoding=encoding) as f:
-            lines = f.readlines()
-        lines = [x.rstrip() for x in lines]
-        while lines and not lines[-1]: lines.pop()
-        lines0 = [lines[i] for i in range(0, len(lines), 2)]
-        lines1 = [lines[i] for i in range(1, len(lines), 2)]
-        if not sum(map(len, lines0)): lines = lines1
-        if not sum(map(len, lines1)): lines = lines0
-        return "\n".join(lines)
+            text = f.read()
+
+        # For viewing purposes, we don't care about anything after EOF (e.g. SAUCE)
+        eof_marker = text.find("\032")
+        if eof_marker:
+            text = text[:eof_marker]
+
+        return text
 
     def resize_to_text(self):
         """Resize window to fit the text in the view."""

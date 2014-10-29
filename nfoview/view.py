@@ -167,11 +167,6 @@ class TextView(Gtk.TextView):
 
         re_ansi = re.compile(r"\033\[(.*?)([Cm])")
 
-        # For viewing purposes, we don't care about anything after EOF (e.g. SAUCE)
-        eof_marker = text.find("\032")
-        if eof_marker:
-            text = text[:eof_marker]
-
         lines = text.split("\n")
 
         # Scan text word-by-word for possible URLs,
