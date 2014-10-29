@@ -133,37 +133,40 @@ class TextView(Gtk.TextView):
         lines = text.splitlines()
 
         if text_type == 'ANSI':
+            if screen_width == 0:
+                screen_width = 80
+
             # Create colors
             fg_color_tags_normal =  {
-                    "30": text_buffer.create_tag("color_30", foreground_rgba=Gdk.RGBA(0.0,0,0,1.0)),
-                    "31": text_buffer.create_tag("color_31", foreground_rgba=Gdk.RGBA(0.66,0,0,1.0)),
-                    "32": text_buffer.create_tag("color_32", foreground_rgba=Gdk.RGBA(0,0.66,0,1.0)),
-                    "33": text_buffer.create_tag("color_33", foreground_rgba=Gdk.RGBA(0.66,0.33,1.0)),
-                    "34": text_buffer.create_tag("color_34", foreground_rgba=Gdk.RGBA(0,0,0.66,1.0)),
-                    "35": text_buffer.create_tag("color_35", foreground_rgba=Gdk.RGBA(0.66,0,0.66,1.0)),
-                    "36": text_buffer.create_tag("color_36", foreground_rgba=Gdk.RGBA(0,0.66,0.66,1.0)),
-                    "37": text_buffer.create_tag("color_37", foreground_rgba=Gdk.RGBA(0.66,0.66,0.66,1.0)),
+                    30: text_buffer.create_tag("color_30", foreground_rgba=Gdk.RGBA(0.0,0,0,1.0)),
+                    31: text_buffer.create_tag("color_31", foreground_rgba=Gdk.RGBA(0.66,0,0,1.0)),
+                    32: text_buffer.create_tag("color_32", foreground_rgba=Gdk.RGBA(0,0.66,0,1.0)),
+                    33: text_buffer.create_tag("color_33", foreground_rgba=Gdk.RGBA(0.66,0.33,1.0)),
+                    34: text_buffer.create_tag("color_34", foreground_rgba=Gdk.RGBA(0,0,0.66,1.0)),
+                    35: text_buffer.create_tag("color_35", foreground_rgba=Gdk.RGBA(0.66,0,0.66,1.0)),
+                    36: text_buffer.create_tag("color_36", foreground_rgba=Gdk.RGBA(0,0.66,0.66,1.0)),
+                    37: text_buffer.create_tag("color_37", foreground_rgba=Gdk.RGBA(0.66,0.66,0.66,1.0)),
                     }
             fg_color_tags_high =  {
-                    "30": text_buffer.create_tag("color_30_hi", foreground_rgba=Gdk.RGBA(0.33,0.33,0.33,1.00)),
-                    "31": text_buffer.create_tag("color_31_hi", foreground_rgba=Gdk.RGBA(1.00,0.33,0.33,1.00)),
-                    "32": text_buffer.create_tag("color_32_hi", foreground_rgba=Gdk.RGBA(0.33,1.00,0.33,1.00)),
-                    "33": text_buffer.create_tag("color_33_hi", foreground_rgba=Gdk.RGBA(1.00,1.00,0.33,1.00)),
-                    "34": text_buffer.create_tag("color_34_hi", foreground_rgba=Gdk.RGBA(0.33,0.33,1.00,1.00)),
-                    "35": text_buffer.create_tag("color_35_hi", foreground_rgba=Gdk.RGBA(1.00,0.33,1.00,1.00)),
-                    "36": text_buffer.create_tag("color_36_hi", foreground_rgba=Gdk.RGBA(0.33,1.00,1.00,1.00)),
-                    "37": text_buffer.create_tag("color_37_hi", foreground_rgba=Gdk.RGBA(1.00,1.00,1.00,1.00)),
+                    30: text_buffer.create_tag("color_30_hi", foreground_rgba=Gdk.RGBA(0.33,0.33,0.33,1.00)),
+                    31: text_buffer.create_tag("color_31_hi", foreground_rgba=Gdk.RGBA(1.00,0.33,0.33,1.00)),
+                    32: text_buffer.create_tag("color_32_hi", foreground_rgba=Gdk.RGBA(0.33,1.00,0.33,1.00)),
+                    33: text_buffer.create_tag("color_33_hi", foreground_rgba=Gdk.RGBA(1.00,1.00,0.33,1.00)),
+                    34: text_buffer.create_tag("color_34_hi", foreground_rgba=Gdk.RGBA(0.33,0.33,1.00,1.00)),
+                    35: text_buffer.create_tag("color_35_hi", foreground_rgba=Gdk.RGBA(1.00,0.33,1.00,1.00)),
+                    36: text_buffer.create_tag("color_36_hi", foreground_rgba=Gdk.RGBA(0.33,1.00,1.00,1.00)),
+                    37: text_buffer.create_tag("color_37_hi", foreground_rgba=Gdk.RGBA(1.00,1.00,1.00,1.00)),
                     }
 
             bg_color_tags_normal =  {
-                    "40": text_buffer.create_tag("color_40", background_rgba=Gdk.RGBA(0.00,0.00,0.00,1.00)),
-                    "41": text_buffer.create_tag("color_41", background_rgba=Gdk.RGBA(0.66,0.00,0.00,1.00)),
-                    "42": text_buffer.create_tag("color_42", background_rgba=Gdk.RGBA(0.00,0.66,0.00,1.00)),
-                    "43": text_buffer.create_tag("color_43", background_rgba=Gdk.RGBA(0.66,0.33,0.00,1.00)),
-                    "44": text_buffer.create_tag("color_44", background_rgba=Gdk.RGBA(0.00,0.00,0.66,1.00)),
-                    "45": text_buffer.create_tag("color_45", background_rgba=Gdk.RGBA(0.66,0.00,0.66,1.00)),
-                    "46": text_buffer.create_tag("color_46", background_rgba=Gdk.RGBA(0.00,0.66,0.66,1.00)),
-                    "47": text_buffer.create_tag("color_47", background_rgba=Gdk.RGBA(0.66,0.66,0.66,1.00)),
+                    40: text_buffer.create_tag("color_40", background_rgba=Gdk.RGBA(0.00,0.00,0.00,1.00)),
+                    41: text_buffer.create_tag("color_41", background_rgba=Gdk.RGBA(0.66,0.00,0.00,1.00)),
+                    42: text_buffer.create_tag("color_42", background_rgba=Gdk.RGBA(0.00,0.66,0.00,1.00)),
+                    43: text_buffer.create_tag("color_43", background_rgba=Gdk.RGBA(0.66,0.33,0.00,1.00)),
+                    44: text_buffer.create_tag("color_44", background_rgba=Gdk.RGBA(0.00,0.00,0.66,1.00)),
+                    45: text_buffer.create_tag("color_45", background_rgba=Gdk.RGBA(0.66,0.00,0.66,1.00)),
+                    46: text_buffer.create_tag("color_46", background_rgba=Gdk.RGBA(0.00,0.66,0.66,1.00)),
+                    47: text_buffer.create_tag("color_47", background_rgba=Gdk.RGBA(0.66,0.66,0.66,1.00)),
                     }
 
             bold_tag = text_buffer.create_tag("bold", weight=Pango.Weight.BOLD)
@@ -174,13 +177,16 @@ class TextView(Gtk.TextView):
             # 22 - Normal color
             # 25 - Blink off
 
-            active_fg_color = fg_color_tags_normal["37"]
-            active_bg_color = bg_color_tags_normal["40"]
-            active_tags = [active_fg_color, active_bg_color]
+            active_fg_color = 37
+            active_bg_color = 40
+            active_fg_color_tag = fg_color_tags_normal[active_fg_color]
+            active_bg_color_tag = bg_color_tags_normal[active_bg_color]
+
+            active_tags = [ active_fg_color_tag, active_bg_color_tag, ]
             use_high = False
             use_inverse = False
 
-            re_ansi = re.compile(r"\033\[(.*?)([Cm])")
+            re_ansi = re.compile(r"\033\[(.*?)([A-Za-z])")
 
             for i, line in enumerate(lines):
                 line_length = 0
@@ -209,8 +215,8 @@ class TextView(Gtk.TextView):
                             modifier = int(modifier)
                             # SGR parameters
                             if modifier == 0:
-                                active_fg_color = fg_color_tags_normal["37"]
-                                active_bg_color = bg_color_tags_normal["40"]
+                                active_fg_color = 37
+                                active_bg_color = 40
                                 use_high = False
                                 use_inverse = False
 
@@ -230,15 +236,20 @@ class TextView(Gtk.TextView):
                                 use_inverse = False
 
                             elif modifier >= 30 and modifier <= 37: # fg colors
-                                if use_high:
-                                    active_fg_color = fg_color_tags_high[str(modifier)]
-                                else:
-                                    active_fg_color = fg_color_tags_normal[str(modifier)]
+                                active_fg_color = modifier
 
                             elif modifier >= 40 and modifier <= 47: # fg colors
-                                active_bg_color = bg_color_tags_normal[str(modifier)]
+                                active_bg_color = modifier
+                            else:
+                                print("Unhandled SGR flag %d" % modifier)
 
-                        active_tags = [ active_fg_color, active_bg_color, ]
+                        if use_high:
+                            active_fg_color_tag = fg_color_tags_high[active_fg_color]
+                        else:
+                            active_fg_color_tag = fg_color_tags_normal[active_fg_color]
+                        active_bg_color_tag = bg_color_tags_normal[active_bg_color]
+
+                        active_tags = [ active_fg_color_tag, active_bg_color_tag, ]
 
                     elif code == "C": # Move cursor n steps to the right
                         if screen_width:
@@ -248,6 +259,10 @@ class TextView(Gtk.TextView):
                                 line_length = 0
                         self._insert_word(" " * int(modifier), active_tags)
                         line_length += int(modifier)
+                    elif code == "A": # Cursor UP
+                        print("ANSI Cursor up not handled!")
+                    else:
+                        print("Unhandled ANSI escape code %s" % code)
 
                 # Add text after last escape-code
                 text_to_add = line[last_match:]
