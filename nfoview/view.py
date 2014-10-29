@@ -61,22 +61,34 @@ class TextView(Gtk.TextView):
         self.override_font(font_desc)
         nfoview.util.connect(self, self, "motion-notify-event")
 
-    def _insert_url(self, url):
-        """Insert `url` into the text view as a hyperlink."""
+    def _insert_href(self, url, start_pos, end_pos):
         text_buffer = self.get_buffer()
         tag = text_buffer.create_tag(None)
         tag.props.underline = Pango.Underline.SINGLE
         tag.connect("event", self._on_link_tag_event)
         tag.nfoview_url = url
-        itr = text_buffer.get_end_iter()
-        text_buffer.insert_with_tags(itr, url, tag)
+        start_itr = text_buffer.get_iter_at_offset(start_pos)
+        end_itr = text_buffer.get_iter_at_offset(end_pos)
+        text_buffer.apply_tag(tag, start_itr, end_itr)
         self._link_tags.append(tag)
+
+    def _insert_url(self, url):
+        """Insert `url` into the text view as a hyperlink."""
+        text_buffer = self.get_buffer()
+        start_itr = text_buffer.get_end_iter()
+        text_buffer.insert(url)
+        end_itr = text_buffer.get_end_iter()
+        self._insert_href(url, start_itr.get_offset(), end_itr.get_offset())
+
 
     def _insert_word(self, word, tags = None):
         """Insert `word` into the text view."""
         text_buffer = self.get_buffer()
         itr = text_buffer.get_end_iter()
-        text_buffer.insert_with_tags(itr, word, *tags)
+        if tags:
+            text_buffer.insert_with_tags(itr, word, *tags)
+        else:
+            text_buffer.insert(itr, word)
 
         """
         tag_str = ""
@@ -108,7 +120,7 @@ class TextView(Gtk.TextView):
                 return True # to not call the default handler.
         window.set_cursor(Gdk.Cursor(cursor_type=Gdk.CursorType.XTERM))
 
-    def set_text(self, text):
+    def set_text(self, text, text_type = 'ASCII'):
         """Set the text displayed in the text view."""
         re_url = re.compile(r"(([0-9a-zA-Z]+://\S+?\.\S+)|(www\.\S+?\.\S+))")
         self._link_tags = []
@@ -118,122 +130,131 @@ class TextView(Gtk.TextView):
         text_buffer.remove_all_tags(*bounds)
         text_buffer.delete(*bounds)
 
-        # Create colors
-        fg_color_tags_normal =  {
-                "30": text_buffer.create_tag("color_30", foreground_rgba=Gdk.RGBA(0.0,0,0,1.0)),
-                "31": text_buffer.create_tag("color_31", foreground_rgba=Gdk.RGBA(0.66,0,0,1.0)),
-                "32": text_buffer.create_tag("color_32", foreground_rgba=Gdk.RGBA(0,0.66,0,1.0)),
-                "33": text_buffer.create_tag("color_33", foreground_rgba=Gdk.RGBA(0.66,0.33,1.0)),
-                "34": text_buffer.create_tag("color_34", foreground_rgba=Gdk.RGBA(0,0,0.66,1.0)),
-                "35": text_buffer.create_tag("color_35", foreground_rgba=Gdk.RGBA(0.66,0,0.66,1.0)),
-                "36": text_buffer.create_tag("color_36", foreground_rgba=Gdk.RGBA(0,0.66,0.66,1.0)),
-                "37": text_buffer.create_tag("color_37", foreground_rgba=Gdk.RGBA(0.66,0.66,0.66,1.0)),
-                }
-        fg_color_tags_high =  {
-                "30": text_buffer.create_tag("color_30_hi", foreground_rgba=Gdk.RGBA(0.33,0.33,0.33,1.00)),
-                "31": text_buffer.create_tag("color_31_hi", foreground_rgba=Gdk.RGBA(1.00,0.33,0.33,1.00)),
-                "32": text_buffer.create_tag("color_32_hi", foreground_rgba=Gdk.RGBA(0.33,1.00,0.33,1.00)),
-                "33": text_buffer.create_tag("color_33_hi", foreground_rgba=Gdk.RGBA(1.00,1.00,0.33,1.00)),
-                "34": text_buffer.create_tag("color_34_hi", foreground_rgba=Gdk.RGBA(0.33,0.33,1.00,1.00)),
-                "35": text_buffer.create_tag("color_35_hi", foreground_rgba=Gdk.RGBA(1.00,0.33,1.00,1.00)),
-                "36": text_buffer.create_tag("color_36_hi", foreground_rgba=Gdk.RGBA(0.33,1.00,1.00,1.00)),
-                "37": text_buffer.create_tag("color_37_hi", foreground_rgba=Gdk.RGBA(1.00,1.00,1.00,1.00)),
-                }
-
-        bg_color_tags_normal =  {
-                "40": text_buffer.create_tag("color_40", background_rgba=Gdk.RGBA(0.00,0.00,0.00,1.00)),
-                "41": text_buffer.create_tag("color_41", background_rgba=Gdk.RGBA(0.66,0.00,0.00,1.00)),
-                "42": text_buffer.create_tag("color_42", background_rgba=Gdk.RGBA(0.00,0.66,0.00,1.00)),
-                "43": text_buffer.create_tag("color_43", background_rgba=Gdk.RGBA(0.66,0.33,0.00,1.00)),
-                "44": text_buffer.create_tag("color_44", background_rgba=Gdk.RGBA(0.00,0.00,0.66,1.00)),
-                "45": text_buffer.create_tag("color_45", background_rgba=Gdk.RGBA(0.66,0.00,0.66,1.00)),
-                "46": text_buffer.create_tag("color_46", background_rgba=Gdk.RGBA(0.00,0.66,0.66,1.00)),
-                "47": text_buffer.create_tag("color_47", background_rgba=Gdk.RGBA(0.66,0.66,0.66,1.00)),
-                }
-
-        bold_tag = text_buffer.create_tag("bold", weight=Pango.Weight.BOLD)
-        underline_tag = text_buffer.create_tag("underline", underline=Pango.Underline.SINGLE)
-        # Blink, slow <150/m
-        # Blink, rapid >150/m
-        # Inverse video
-        # 22 - Normal color
-        # 25 - Blink off
-
-        active_fg_color = fg_color_tags_normal["37"]
-        active_bg_color = bg_color_tags_normal["40"]
-        active_tags = [active_fg_color, active_bg_color]
-        use_high = False
-        use_inverse = False
-
-        re_ansi = re.compile(r"\033\[(.*?)([Cm])")
-
         lines = text.splitlines()
 
-        # Scan text word-by-word for possible URLs,
-        # but insert words in larger chunks to avoid
-        # doing too many slow text view updates.
-        word_queue = []
-        for i, line in enumerate(lines):
-            line_length = 0
-            matches = re_ansi.finditer(line)
-            last_match = 0
-            for m in matches:
-                # Add text before ANSI escape code
-                self._insert_word(line[last_match:m.start(0)], active_tags)
-                line_length += m.start(0) - last_match
-                last_match = m.end(0)
+        if text_type == 'ANSI':
+            # Create colors
+            fg_color_tags_normal =  {
+                    "30": text_buffer.create_tag("color_30", foreground_rgba=Gdk.RGBA(0.0,0,0,1.0)),
+                    "31": text_buffer.create_tag("color_31", foreground_rgba=Gdk.RGBA(0.66,0,0,1.0)),
+                    "32": text_buffer.create_tag("color_32", foreground_rgba=Gdk.RGBA(0,0.66,0,1.0)),
+                    "33": text_buffer.create_tag("color_33", foreground_rgba=Gdk.RGBA(0.66,0.33,1.0)),
+                    "34": text_buffer.create_tag("color_34", foreground_rgba=Gdk.RGBA(0,0,0.66,1.0)),
+                    "35": text_buffer.create_tag("color_35", foreground_rgba=Gdk.RGBA(0.66,0,0.66,1.0)),
+                    "36": text_buffer.create_tag("color_36", foreground_rgba=Gdk.RGBA(0,0.66,0.66,1.0)),
+                    "37": text_buffer.create_tag("color_37", foreground_rgba=Gdk.RGBA(0.66,0.66,0.66,1.0)),
+                    }
+            fg_color_tags_high =  {
+                    "30": text_buffer.create_tag("color_30_hi", foreground_rgba=Gdk.RGBA(0.33,0.33,0.33,1.00)),
+                    "31": text_buffer.create_tag("color_31_hi", foreground_rgba=Gdk.RGBA(1.00,0.33,0.33,1.00)),
+                    "32": text_buffer.create_tag("color_32_hi", foreground_rgba=Gdk.RGBA(0.33,1.00,0.33,1.00)),
+                    "33": text_buffer.create_tag("color_33_hi", foreground_rgba=Gdk.RGBA(1.00,1.00,0.33,1.00)),
+                    "34": text_buffer.create_tag("color_34_hi", foreground_rgba=Gdk.RGBA(0.33,0.33,1.00,1.00)),
+                    "35": text_buffer.create_tag("color_35_hi", foreground_rgba=Gdk.RGBA(1.00,0.33,1.00,1.00)),
+                    "36": text_buffer.create_tag("color_36_hi", foreground_rgba=Gdk.RGBA(0.33,1.00,1.00,1.00)),
+                    "37": text_buffer.create_tag("color_37_hi", foreground_rgba=Gdk.RGBA(1.00,1.00,1.00,1.00)),
+                    }
 
-                # Handle escape code
-                code = m.group(2)
-                modifier = m.group(1)
+            bg_color_tags_normal =  {
+                    "40": text_buffer.create_tag("color_40", background_rgba=Gdk.RGBA(0.00,0.00,0.00,1.00)),
+                    "41": text_buffer.create_tag("color_41", background_rgba=Gdk.RGBA(0.66,0.00,0.00,1.00)),
+                    "42": text_buffer.create_tag("color_42", background_rgba=Gdk.RGBA(0.00,0.66,0.00,1.00)),
+                    "43": text_buffer.create_tag("color_43", background_rgba=Gdk.RGBA(0.66,0.33,0.00,1.00)),
+                    "44": text_buffer.create_tag("color_44", background_rgba=Gdk.RGBA(0.00,0.00,0.66,1.00)),
+                    "45": text_buffer.create_tag("color_45", background_rgba=Gdk.RGBA(0.66,0.00,0.66,1.00)),
+                    "46": text_buffer.create_tag("color_46", background_rgba=Gdk.RGBA(0.00,0.66,0.66,1.00)),
+                    "47": text_buffer.create_tag("color_47", background_rgba=Gdk.RGBA(0.66,0.66,0.66,1.00)),
+                    }
 
-                if code == "m":
-                    modifiers = modifier.split(";")
-                    for modifier in modifiers:
-                        modifier = int(modifier)
-                        # SGR parameters
-                        if modifier == 0:
-                            active_fg_color = fg_color_tags_normal["37"]
-                            active_bg_color = bg_color_tags_normal["40"]
-                            use_high = False
-                            use_inverse = False
+            bold_tag = text_buffer.create_tag("bold", weight=Pango.Weight.BOLD)
+            underline_tag = text_buffer.create_tag("underline", underline=Pango.Underline.SINGLE)
+            # Blink, slow <150/m
+            # Blink, rapid >150/m
+            # Inverse video
+            # 22 - Normal color
+            # 25 - Blink off
 
-                        elif modifier == 1:
-                            use_high = True
+            active_fg_color = fg_color_tags_normal["37"]
+            active_bg_color = bg_color_tags_normal["40"]
+            active_tags = [active_fg_color, active_bg_color]
+            use_high = False
+            use_inverse = False
 
-                        elif modifier == 7: # Inverse, swap fg and bg
-                            use_inverse = True
+            re_ansi = re.compile(r"\033\[(.*?)([Cm])")
 
-                        elif modifier == 21: # Bold: off or Underline: double
-                            use_high = False
+            for i, line in enumerate(lines):
+                line_length = 0
+                matches = re_ansi.finditer(line)
+                last_match = 0
+                for m in matches:
+                    # Add text before ANSI escape code
+                    self._insert_word(line[last_match:m.start(0)], active_tags)
+                    line_length += m.start(0) - last_match
+                    last_match = m.end(0)
 
-                        elif modifier == 22: # Normal color or intesity
-                            use_high = False
+                    # Handle escape code
+                    code = m.group(2)
+                    modifier = m.group(1)
 
-                        elif modifier == 27: # Normal color or intesity
-                            use_inverse = False
+                    if code == "m":
+                        modifiers = modifier.split(";")
+                        for modifier in modifiers:
+                            modifier = int(modifier)
+                            # SGR parameters
+                            if modifier == 0:
+                                active_fg_color = fg_color_tags_normal["37"]
+                                active_bg_color = bg_color_tags_normal["40"]
+                                use_high = False
+                                use_inverse = False
 
-                        elif modifier >= 30 and modifier <= 37: # fg colors
-                            if use_high:
-                                active_fg_color = fg_color_tags_high[str(modifier)]
-                            else:
-                                active_fg_color = fg_color_tags_normal[str(modifier)]
+                            elif modifier == 1:
+                                use_high = True
 
-                        elif modifier >= 40 and modifier <= 47: # fg colors
-                            active_bg_color = bg_color_tags_normal[str(modifier)]
+                            elif modifier == 7: # Inverse, swap fg and bg
+                                use_inverse = True
 
-                    active_tags = [ active_fg_color, active_bg_color, ]
+                            elif modifier == 21: # Bold: off or Underline: double
+                                use_high = False
 
-                elif code == "C": # Move cursor n steps to the right
-                    self._insert_word(" " * int(modifier), active_tags)
-                    line_length += int(modifier)
+                            elif modifier == 22: # Normal color or intesity
+                                use_high = False
 
-            # Add text after last escape-code
-            suffix = ""
-            line_length += len(line) - last_match
-            if line_length < 80:
-                suffix = " " * (80 - line_length)
-            self._insert_word(line[last_match:] + suffix + "\n", active_tags)
+                            elif modifier == 27: # Normal color or intesity
+                                use_inverse = False
+
+                            elif modifier >= 30 and modifier <= 37: # fg colors
+                                if use_high:
+                                    active_fg_color = fg_color_tags_high[str(modifier)]
+                                else:
+                                    active_fg_color = fg_color_tags_normal[str(modifier)]
+
+                            elif modifier >= 40 and modifier <= 47: # fg colors
+                                active_bg_color = bg_color_tags_normal[str(modifier)]
+
+                        active_tags = [ active_fg_color, active_bg_color, ]
+
+                    elif code == "C": # Move cursor n steps to the right
+                        self._insert_word(" " * int(modifier), active_tags)
+                        line_length += int(modifier)
+
+                # Add text after last escape-code
+                suffix = ""
+                line_length += len(line) - last_match
+                if line_length < 80:
+                    suffix = " " * (80 - line_length)
+                self._insert_word(line[last_match:] + suffix + "\n", active_tags)
+
+        else:
+            for i, line in enumerate(lines):
+                self._insert_word(line+"\n")
+
+        # Get all text from our textview, and find any/all urls
+        text = self.get_text()
+        matches = re_url.finditer(text)
+        for m in matches:
+            print("add href %s @ %d,%d" % (m.group(0), m.start(0),
+                m.end(0)))
+            self._insert_href(m.group(0),m.start(0),m.end(0))
 
         self.update_colors()
         """
