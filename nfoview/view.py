@@ -235,7 +235,7 @@ class TextView(Gtk.TextView):
                 suffix = " " * (80 - line_length)
             self._insert_word(line[last_match:] + suffix + "\n", active_tags)
 
-     #   self.update_colors()
+        self.update_colors()
         """
 
             words = line.split(" ")
@@ -260,7 +260,6 @@ class TextView(Gtk.TextView):
         """
 
     def update_colors(self):
-        return
         """Update colors to match the current color scheme."""
         name = nfoview.conf.color_scheme
         scheme = nfoview.util.get_color_scheme(name, "default")

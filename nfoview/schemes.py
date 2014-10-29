@@ -91,7 +91,7 @@ class DefaultScheme(ColorScheme):
 
     """Color scheme with default fore- and background colors."""
 
-    name         = "default"
+    name         = "system"
     label        = _("System theme")
 
     # Named public colors, available since GTK+ 3.14.
@@ -133,7 +133,7 @@ class WhiteOnBlackScheme(ColorScheme):
 
     """Color scheme with white text on black background."""
 
-    name         = "white-on-black"
+    name         = "default"
     label        = _("White on black")
     foreground   = nfoview.util.hex_to_rgba("#ffffff")
     background   = nfoview.util.hex_to_rgba("#000000")
