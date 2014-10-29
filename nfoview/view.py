@@ -167,7 +167,7 @@ class TextView(Gtk.TextView):
 
         re_ansi = re.compile(r"\033\[(.*?)([Cm])")
 
-        lines = text.split("\n")
+        lines = text.splitlines()
 
         # Scan text word-by-word for possible URLs,
         # but insert words in larger chunks to avoid
