@@ -120,7 +120,7 @@ class TextView(Gtk.TextView):
                 return True # to not call the default handler.
         window.set_cursor(Gdk.Cursor(cursor_type=Gdk.CursorType.XTERM))
 
-    def set_text(self, text, text_type = 'ASCII'):
+    def set_text(self, text, text_type = 'ASCII', screen_width = 0):
         """Set the text displayed in the text view."""
         re_url = re.compile(r"(([0-9a-zA-Z]+://\S+?\.\S+)|(www\.\S+?\.\S+))")
         self._link_tags = []
@@ -188,8 +188,15 @@ class TextView(Gtk.TextView):
                 last_match = 0
                 for m in matches:
                     # Add text before ANSI escape code
-                    self._insert_word(line[last_match:m.start(0)], active_tags)
-                    line_length += m.start(0) - last_match
+                    text_to_add = line[last_match:m.start(0)]
+                    if screen_width:
+                        while (line_length + len(text_to_add)) > screen_width:
+                            self._insert_word(text_to_add[:screen_width - line_length] + '\n', active_tags)
+                            text_to_add = text_to_add[screen_width - line_length:]
+                            line_length = 0
+
+                    self._insert_word(text_to_add, active_tags)
+                    line_length += len(text_to_add)
                     last_match = m.end(0)
 
                     # Handle escape code
@@ -234,15 +241,29 @@ class TextView(Gtk.TextView):
                         active_tags = [ active_fg_color, active_bg_color, ]
 
                     elif code == "C": # Move cursor n steps to the right
+                        if screen_width:
+                            while (line_length + int(modifier)) > screen_width:
+                                self._insert_word(" " * (screen_width - line_length) + '\n', active_tags)
+                                modifier = int(modifier) - (screen_width - line_length)
+                                line_length = 0
                         self._insert_word(" " * int(modifier), active_tags)
                         line_length += int(modifier)
 
                 # Add text after last escape-code
+                text_to_add = line[last_match:]
+                if screen_width:
+                    while (line_length + len(text_to_add)) > screen_width:
+                        self._insert_word(text_to_add[:screen_width - line_length] + '\n', active_tags)
+                        text_to_add = text_to_add[screen_width - line_length:]
+                        line_length = 0
+
+                self._insert_word(text_to_add, active_tags)
+                line_length += len(text_to_add)
+
                 suffix = ""
-                line_length += len(line) - last_match
                 if line_length < 80:
                     suffix = " " * (80 - line_length)
-                self._insert_word(line[last_match:] + suffix + "\n", active_tags)
+                self._insert_word(suffix + "\n", active_tags)
 
         else:
             for i, line in enumerate(lines):
