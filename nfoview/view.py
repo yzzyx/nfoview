@@ -130,36 +130,25 @@ class TextView(Gtk.TextView):
                 "37": text_buffer.create_tag("color_37", foreground_rgba=Gdk.RGBA(0.66,0.66,0.66,1.0)),
                 }
         fg_color_tags_high =  {
-                "30": text_buffer.create_tag("color_30_hi", foreground_gdk=Gdk.color_parse("#555555FF")),
-                "31": text_buffer.create_tag("color_31_hi", foreground_gdk=Gdk.color_parse("#FF5555FF")),
-                "32": text_buffer.create_tag("color_32_hi", foreground_gdk=Gdk.color_parse("#55FF55FF")),
-                "33": text_buffer.create_tag("color_33_hi", foreground_gdk=Gdk.color_parse("#FFFF55FF")),
-                "34": text_buffer.create_tag("color_34_hi", foreground_gdk=Gdk.color_parse("#5555FFFF")),
-                "35": text_buffer.create_tag("color_35_hi", foreground_gdk=Gdk.color_parse("#FF55FFFF")),
-                "36": text_buffer.create_tag("color_36_hi", foreground_gdk=Gdk.color_parse("#55FFFFFF")),
-                "37": text_buffer.create_tag("color_37_hi", foreground_gdk=Gdk.color_parse("#FFFFFFFF")),
+                "30": text_buffer.create_tag("color_30_hi", foreground_rgba=Gdk.RGBA(0.33,0.33,0.33,1.00)),
+                "31": text_buffer.create_tag("color_31_hi", foreground_rgba=Gdk.RGBA(1.00,0.33,0.33,1.00)),
+                "32": text_buffer.create_tag("color_32_hi", foreground_rgba=Gdk.RGBA(0.33,1.00,0.33,1.00)),
+                "33": text_buffer.create_tag("color_33_hi", foreground_rgba=Gdk.RGBA(1.00,1.00,0.33,1.00)),
+                "34": text_buffer.create_tag("color_34_hi", foreground_rgba=Gdk.RGBA(0.33,0.33,1.00,1.00)),
+                "35": text_buffer.create_tag("color_35_hi", foreground_rgba=Gdk.RGBA(1.00,0.33,1.00,1.00)),
+                "36": text_buffer.create_tag("color_36_hi", foreground_rgba=Gdk.RGBA(0.33,1.00,1.00,1.00)),
+                "37": text_buffer.create_tag("color_37_hi", foreground_rgba=Gdk.RGBA(1.00,1.00,1.00,1.00)),
                 }
 
         bg_color_tags_normal =  {
-                "40": text_buffer.create_tag("color_40", background="black"),
-                #"40": text_buffer.create_tag("color_40", background_gdk=Gdk.color_parse("#000000FF")),
-                "41": text_buffer.create_tag("color_41", background_gdk=Gdk.color_parse("#AA0000FF")),
-                "42": text_buffer.create_tag("color_42", background_gdk=Gdk.color_parse("#00AA00FF")),
-                "43": text_buffer.create_tag("color_43", background_gdk=Gdk.color_parse("#AA5500FF")),
-                "44": text_buffer.create_tag("color_44", background_gdk=Gdk.color_parse("#0000AAFF")),
-                "45": text_buffer.create_tag("color_45", background_gdk=Gdk.color_parse("#AA00AAFF")),
-                "46": text_buffer.create_tag("color_46", background_gdk=Gdk.color_parse("#00AAAAFF")),
-                "47": text_buffer.create_tag("color_47", background_gdk=Gdk.color_parse("#AAAAAAFF")),
-                }
-        bg_color_tags_high =  {
-                "40": text_buffer.create_tag("color_40_hi", background_gdk=Gdk.color_parse("#555555FF")),
-                "41": text_buffer.create_tag("color_41_hi", background_gdk=Gdk.color_parse("#FF5555FF")),
-                "42": text_buffer.create_tag("color_42_hi", background_gdk=Gdk.color_parse("#55FF55FF")),
-                "43": text_buffer.create_tag("color_43_hi", background_gdk=Gdk.color_parse("#FFFF55FF")),
-                "44": text_buffer.create_tag("color_44_hi", background_gdk=Gdk.color_parse("#5555FFFF")),
-                "45": text_buffer.create_tag("color_45_hi", background_gdk=Gdk.color_parse("#FF55FFFF")),
-                "46": text_buffer.create_tag("color_46_hi", background_gdk=Gdk.color_parse("#55FFFFFF")),
-                "47": text_buffer.create_tag("color_47_hi", background_gdk=Gdk.color_parse("#FFFFFFFF")),
+                "40": text_buffer.create_tag("color_40", background_rgba=Gdk.RGBA(0.00,0.00,0.00,1.00)),
+                "41": text_buffer.create_tag("color_41", background_rgba=Gdk.RGBA(0.66,0.00,0.00,1.00)),
+                "42": text_buffer.create_tag("color_42", background_rgba=Gdk.RGBA(0.00,0.66,0.00,1.00)),
+                "43": text_buffer.create_tag("color_43", background_rgba=Gdk.RGBA(0.66,0.33,0.00,1.00)),
+                "44": text_buffer.create_tag("color_44", background_rgba=Gdk.RGBA(0.00,0.00,0.66,1.00)),
+                "45": text_buffer.create_tag("color_45", background_rgba=Gdk.RGBA(0.66,0.00,0.66,1.00)),
+                "46": text_buffer.create_tag("color_46", background_rgba=Gdk.RGBA(0.00,0.66,0.66,1.00)),
+                "47": text_buffer.create_tag("color_47", background_rgba=Gdk.RGBA(0.66,0.66,0.66,1.00)),
                 }
 
         bold_tag = text_buffer.create_tag("bold", weight=Pango.Weight.BOLD)
