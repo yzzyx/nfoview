@@ -166,17 +166,26 @@ class TextView(Gtk.TextView):
         use_inverse = False
 
         re_ansi = re.compile(r"\033\[(.*?)([Cm])")
+
+        # For viewing purposes, we don't care about anything after EOF (e.g. SAUCE)
+        eof_marker = text.find("\032")
+        if eof_marker:
+            text = text[:eof_marker]
+
         lines = text.split("\n")
+
         # Scan text word-by-word for possible URLs,
         # but insert words in larger chunks to avoid
         # doing too many slow text view updates.
         word_queue = []
         for i, line in enumerate(lines):
+            line_length = 0
             matches = re_ansi.finditer(line)
             last_match = 0
             for m in matches:
                 # Add text before ANSI escape code
                 self._insert_word(line[last_match:m.start(0)], active_tags)
+                line_length += m.start(0) - last_match
                 last_match = m.end(0)
 
                 # Handle escape code
@@ -222,11 +231,15 @@ class TextView(Gtk.TextView):
 
                 elif code == "C": # Move cursor n steps to the right
                     self._insert_word(" " * int(modifier), active_tags)
-
-
+                    line_length += int(modifier)
 
             # Add text after last escape-code
-            self._insert_word(line[last_match:] + "\n", active_tags)
+            suffix = ""
+            line_length += len(line) - last_match
+            if line_length < 80:
+                suffix = " " * (80 - line_length)
+            self._insert_word(line[last_match:] + suffix + "\n", active_tags)
+
      #   self.update_colors()
         """
 
