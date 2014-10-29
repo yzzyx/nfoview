@@ -66,34 +66,34 @@ class SAUCE:
                     self.tflags,
                     self.tinfos) = \
                             struct.unpack("<5s 2s 35s 20s 20s 8s I B B H H H H B B 22s", data)
-            if sauce_id == b'SAUCE' and version == b'00':
+            if self.sauce_id == b'SAUCE' and self.version == b'00':
                 self.is_valid = True
-                self.title = title.decode("cp437")
-                self.author = author.decode("cp437")
-                self.group = group.decode("cp437")
+                self.title = self.title.decode("cp437")
+                self.author = self.author.decode("cp437")
+                self.group = self.group.decode("cp437")
 
                 # Load comments
-                if comments_count > 0 and comments_count < 256 and \
-                    (comments_count*64 + 5 + 128) < file_sz:
+                if self.comments_count > 0 and self.comments_count < 256 and \
+                    (self.comments_count*64 + 5 + 128) < file_sz:
                     # Go to comments
                     file_handle.seek(-128 - comments_count*64 - 5, 2)
                     data = f.read(5)
                     if data == b"COMNT":
-                        for c in xrange(0,comments_count):
+                        for c in xrange(0,self.comments_count):
                             comment = file_handle.read(64).decode("cp437")
                             self.comments.append(comment)
 
                 # We only care about ANSI and ASCII files
-                if datatype == 1: # Character datatype
-                    if filetype == 0 or filetype == 1: # ASCII or ANSI
-                        self.screen_width = tinfo1
-                        self.line_count = tinfo2
-                        self.ansiflags = tflags
-                        self.fontname = tinfos.decode("cp437")
-                    elif filetype == 2:
-                        self.screen_width = tinfo1
-                        self.screen_height = tinfo2
-                        self.ansiflags = tflags
-                        self.fontname = tinfos.decode("cp437")
+                if self.datatype == 1: # Character datatype
+                    if self.filetype == 0 or self.filetype == 1: # ASCII or ANSI
+                        self.screen_width = self.tinfo1
+                        self.line_count = self.tinfo2
+                        self.ansiflags = self.tflags
+                        self.fontname = self.tinfos.decode("cp437")
+                    elif self.filetype == 2:
+                        self.screen_width = self.tinfo1
+                        self.screen_height = self.tinfo2
+                        self.ansiflags = self.tflags
+                        self.fontname = self.tinfos.decode("cp437")
             else:
-                is_valid = False
+                self.is_valid = False
