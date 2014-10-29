@@ -262,7 +262,8 @@ class Window(Gtk.Window):
         self.set_title(os.path.basename(path))
         self.current_file = nfoview.file.NfoFile(path)
         self.view.set_text(self.current_file.data,
-                self.current_file.filetype == nfoview.file.TYPE_ANSI and 'ANSI' or 'ASCII' )
+                text_type = (self.current_file.filetype == nfoview.file.TYPE_ANSI and 'ANSI' or 'ASCII'),
+                screen_width = self.current_file.sauce.screen_width)
         self.view.grab_focus()
         self._update_action_sensitivities()
 
