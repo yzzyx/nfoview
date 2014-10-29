@@ -54,6 +54,7 @@ class Window(Gtk.Window):
         self._init_contents()
         self._init_view()
         if self.path is not None:
+            self.current_file = nfoview.file.NfoFile(self.path)
             self.open_file(self.path)
         self.resize_to_text()
         self._update_action_sensitivities()
@@ -259,8 +260,8 @@ class Window(Gtk.Window):
         """Read the file at `path` and show its text in the view."""
         self.path = os.path.abspath(path)
         self.set_title(os.path.basename(path))
-        text = self._read_file(path)
-        self.view.set_text(text)
+        self.current_file = nfoview.file.NfoFile(path)
+        self.view.set_text(self.current_file.data)
         self.view.grab_focus()
         self._update_action_sensitivities()
 
@@ -274,10 +275,6 @@ class Window(Gtk.Window):
         with open(path, "r", encoding=encoding) as f:
             text = f.read()
 
-        # For viewing purposes, we don't care about anything after EOF (e.g. SAUCE)
-        eof_marker = text.find("\032")
-        if eof_marker:
-            text = text[:eof_marker]
 
         return text
 

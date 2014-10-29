@@ -37,6 +37,8 @@ Gtk.IconTheme.get_default().append_search_path(
 
 from nfoview import i18n
 from nfoview import util
+from nfoview import sauce
+from nfoview import file
 from nfoview.errors import *
 from nfoview.config import *
 
